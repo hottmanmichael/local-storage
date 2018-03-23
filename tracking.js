@@ -3,6 +3,10 @@
 var listeners = {};
 var listening = false;
 
+function isTrueObject (value) {
+  return Object.prototype.toString.call(value).split(' ')[1].indexOf('Object') > -1
+}
+
 function listen () {
   if (global.addEventListener) {
     global.addEventListener('storage', change, false);
@@ -23,7 +27,9 @@ function change (e) {
   }
 
   function fire (listener) {
-    listener(JSON.parse(e.newValue), JSON.parse(e.oldValue), e.url || e.uri);
+    var nv = isTrueObject(e.newValue) ? JSON.parse(e.newValue) : e.newValue;
+    var ov = isTrueObject(e.oldValue) ? JSON.parse(e.oldValue) : e.oldValue;
+    listener(nv, ov, e.url || e.uri);
   }
 }
 

@@ -1,4 +1,4 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(){function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s}return e})()({1:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -13,13 +13,19 @@ function accessor (key, value) {
   return set(key, value);
 }
 
+function isTrueObject (value) {
+  return Object.prototype.toString.call(value).split(' ')[1].indexOf('Object') > -1
+}
+
 function get (key) {
-  return JSON.parse(ls.getItem(key));
+  var item = ls.getItem(key);
+  return isTrueObject(item) ? JSON.parse(item) : item;
 }
 
 function set (key, value) {
   try {
-    ls.setItem(key, JSON.stringify(value));
+    var val = isTrueObject(value) ? JSON.stringify(value) : value;
+    ls.setItem(key, val);
     return true;
   } catch (e) {
     return false;
@@ -50,7 +56,7 @@ module.exports = accessor;
 var ms = {};
 
 function getItem (key) {
-  return 'key' in ms ? ms[key] : null;
+  return key in ms ? ms[key] : null;
 }
 
 function setItem (key, value) {
@@ -85,6 +91,10 @@ module.exports = {
 var listeners = {};
 var listening = false;
 
+function isTrueObject (value) {
+  return Object.prototype.toString.call(value).split(' ')[1].indexOf('Object') > -1
+}
+
 function listen () {
   if (global.addEventListener) {
     global.addEventListener('storage', change, false);
@@ -105,7 +115,9 @@ function change (e) {
   }
 
   function fire (listener) {
-    listener(JSON.parse(e.newValue), JSON.parse(e.oldValue), e.url || e.uri);
+    var nv = isTrueObject(e.newValue) ? JSON.parse(e.newValue) : e.newValue;
+    var ov = isTrueObject(e.oldValue) ? JSON.parse(e.oldValue) : e.oldValue;
+    listener(nv, ov, e.url || e.uri);
   }
 }
 
