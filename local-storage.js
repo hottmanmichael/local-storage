@@ -11,13 +11,19 @@ function accessor (key, value) {
   return set(key, value);
 }
 
+function isTrueObject (value) {
+  return Object.prototype.toString.call(value).split(' ')[1].indexOf('Object') > -1
+}
+
 function get (key) {
-  return JSON.parse(ls.getItem(key));
+  var item = ls.getItem(key);
+  return isTrueObject(item) ? JSON.parse(item) : item;
 }
 
 function set (key, value) {
   try {
-    ls.setItem(key, JSON.stringify(value));
+    var val = isTrueObject(value) ? JSON.stringify(value) : value;
+    ls.setItem(key, val);
     return true;
   } catch (e) {
     return false;
